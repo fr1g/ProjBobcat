@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace ProjBobcat.MCI.Exceptions
+namespace ProjBobcat.MLI.Launching
 {
     public class LaunchFailureException : Exception
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ProjBobcat.MCI.EventArgs
+namespace ProjBobcat.MLI.Gaming
 {
     public class GameExitedEventArgs : System.EventArgs
     {

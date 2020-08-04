@@ -1,27 +1,16 @@
 ﻿using System;
-using System.Threading.Tasks;
-using System.IO;
-using ProjBobcat.MCI.EventArgs;
+using ProjBobcat.MLI.Gaming;
+using ProjBobcat.MLI.Logging;
 
-namespace ProjBobcat.MCI
+namespace ProjBobcat.MLI.Launching
 {
     /// <summary>
     /// 表示一个启动器核心。
     /// </summary>
-    public interface ILauncherCore : IDisposable
+    public interface ILauncher : IDisposable
     {
-        /// <summary>
-        /// 获取游戏根目录。
-        /// </summary>
-        DirectoryInfo RootDirectory { get; }
-        /// <summary>
-        /// 获取客户端令牌。
-        /// </summary>
-        Guid ClientToken { get; }
-        /// <summary>
-        /// 获取或设置版本定位器。
-        /// </summary>
-        IVersionLocator VersionLocator { get; }
+        ILaunchSettings Settings { get; }
+
         /// <summary>
         /// 启动游戏。
         /// 若启动成功，其返回值会包含消耗的时间；失败则包含异常信息。
@@ -29,7 +18,7 @@ namespace ProjBobcat.MCI
         /// <param name="settings">启动设置。</param>
         /// <returns>启动结果。若启动成功，会包含消耗的时间；失败则包含异常信息。</returns>
         /// <exception cref="Exceptions.LaunchFailureException">启动失败。</exception>
-        IGame Launch(LaunchSettings settings);
+        IGame Launch(ILaunchSettings settings);
         
         /// <summary>
         /// 启动日志输出事件
