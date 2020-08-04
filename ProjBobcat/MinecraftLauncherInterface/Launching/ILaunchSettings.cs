@@ -21,6 +21,6 @@ namespace ProjBobcat.MLI.Launching
 
         IPlayer SelectedProfile { get; }
 
-        GameArguments GameArguments { get; }
+        IGameArguments GameArguments { get; }
     }
 }
