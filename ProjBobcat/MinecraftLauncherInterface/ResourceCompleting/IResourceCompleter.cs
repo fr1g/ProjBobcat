@@ -4,7 +4,8 @@ using System.Text;
 
 namespace ProjBobcat.MLI.ResourceCompleting
 {
-    interface IResourceCompleter
+    public interface IResourceCompleter
     {
+        // TODO: 放入内容。
     }
 }

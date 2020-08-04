@@ -6,5 +6,6 @@ namespace ProjBobcat.MLI.VersionLocating
 {
     public interface IGameVersion
     {
+        // TODO: 放入内容。
     }
 }

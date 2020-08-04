@@ -6,5 +6,6 @@ namespace ProjBobcat.MLI.Authorizing
 {
     public interface IPlayer
     {
+        // TODO: 放入内容。
     }
 }

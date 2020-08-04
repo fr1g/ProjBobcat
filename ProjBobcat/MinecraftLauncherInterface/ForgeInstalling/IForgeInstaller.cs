@@ -4,7 +4,8 @@ using System.Text;
 
 namespace ProjBobcat.MLI.ForgeInstalling
 {
-    interface IForgeInstaller
+    public interface IForgeInstaller
     {
+        // TODO: 放入内容。
     }
 }

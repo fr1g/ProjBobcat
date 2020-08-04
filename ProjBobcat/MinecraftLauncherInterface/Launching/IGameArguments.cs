@@ -2,5 +2,6 @@
 {
     public interface IGameArguments
     {
+        // TODO: 放入内容。
     }
 }

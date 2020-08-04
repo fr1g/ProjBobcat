@@ -6,5 +6,6 @@ namespace ProjBobcat.MLI.VersionLocating
 {
     public interface IVersionLocator
     {
+        // TODO: 放入内容。
     }
 }
