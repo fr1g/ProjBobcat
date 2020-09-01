@@ -123,11 +123,7 @@ namespace ProjBobcat.DefaultComponent
                 var retryCount = 0;
 
                 await DownloadHelper.AdvancedDownloadListFile(downloadList, DownloadThread, null)
-<<<<<<< Updated upstream
                         .ConfigureAwait(false);
-=======
-                    .ConfigureAwait(false);
->>>>>>> Stashed changes
 
                 if (!_needRetry) return new Tuple<TaskResultStatus, bool>(TaskResultStatus.Success, false);
 
