@@ -1,8 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+﻿using Newtonsoft.Json;
+using ProjBobcat.Class.Helper;
 using ProjBobcat.Class.Model;
 using ProjBobcat.Class.Model.Forge;
 using ProjBobcat.Class.Model.YggdrasilAuth;
@@ -10,32 +7,37 @@ using ProjBobcat.Event;
 using ProjBobcat.Interface;
 using SharpCompress.Common;
 using SharpCompress.Readers;
+using System;
+using System.IO;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
-namespace ProjBobcat.DefaultComponent.ForgeInstaller
+namespace ProjBobcat.DefaultComponent.Installer.ForgeInstaller
 {
     public class LegacyForgeInstaller : IForgeInstaller
     {
         public string RootPath { get; set; }
         public string ForgeExecutablePath { get; set; }
 
-        [Obsolete("旧版本Forge安装模型请补全’RootPath‘属性，即’.minecraft‘文件夹的路径")]
-        public string ForgeInstallPath { get; set; }
-
-        public event EventHandler<ForgeInstallStageChangedEventArgs> StageChangedEventDelegate;
+        public event EventHandler<InstallerStageChangedEventArgs> StageChangedEventDelegate;
 
         public ForgeInstallResult InstallForge()
         {
             if (string.IsNullOrEmpty(ForgeExecutablePath))
                 throw new ArgumentNullException("未指定\"ForgeExecutablePath\"参数");
             if (string.IsNullOrEmpty(RootPath))
-                throw new ArgumentNullException("未指定\"ForgeInstallPath\"参数");
+                throw new ArgumentNullException("未指定\"RootPath\"参数");
 
             var di = new DirectoryInfo(RootPath);
             if (!di.Exists)
                 di.Create();
 
-            di.CreateSubdirectory("Temp");
+            using var md5 = MD5.Create();
+            var hash = CryptoHelper.ComputeFileHash(ForgeExecutablePath, md5);
 
+            di.CreateSubdirectory("Temp").CreateSubdirectory(hash);
+
+            var extractPath = Path.Combine(di.FullName, "Temp", hash);
             try
             {
                 InvokeStatusChangedEvent("解压安装文件", 0.05);
@@ -47,7 +49,7 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
                     if (!reader.Entry.Key.Equals("install_profile.json", StringComparison.Ordinal))
                         continue;
 
-                    reader.WriteEntryToDirectory($"{di.FullName}Temp\\",
+                    reader.WriteEntryToDirectory(extractPath,
                         new ExtractionOptions
                         {
                             ExtractFullPath = true,
@@ -59,21 +61,21 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
                 InvokeStatusChangedEvent("解压完成", 0.1);
 
                 InvokeStatusChangedEvent("解析安装文档", 0.35);
-                var profileContent = File.ReadAllText($"{di.FullName}Temp\\install_profile.json");
+                var profileContent = File.ReadAllText(Path.Combine(extractPath, "install_profile.json"));
                 var profileModel = JsonConvert.DeserializeObject<ForgeInstallProfile>(profileContent);
                 var fileName = profileModel.VersionInfo.Id;
                 InvokeStatusChangedEvent("解析完成", 0.75);
 
-                var forgeDi = new DirectoryInfo($"{di.FullName}versions\\{fileName}");
+                var installDir = GamePathHelper.GetGamePath(RootPath, fileName);
+                var jsonPath = GamePathHelper.GetGameJsonPath(RootPath, fileName);
+
+                var forgeDi = new DirectoryInfo(installDir);
                 if (!forgeDi.Exists)
                     forgeDi.Create();
 
-                var versionJsonString = JsonConvert.SerializeObject(profileModel.VersionInfo, new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver()
-                });
+                var versionJsonString = JsonConvert.SerializeObject(profileModel.VersionInfo, JsonHelper.CamelCasePropertyNamesSettings);
 
-                File.WriteAllText($"{forgeDi.FullName}{fileName}.json", versionJsonString);
+                File.WriteAllText(jsonPath, versionJsonString);
                 InvokeStatusChangedEvent("文件写入完成", 1);
 
 
@@ -104,7 +106,7 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
 
         private void InvokeStatusChangedEvent(string currentStage, double progress)
         {
-            StageChangedEventDelegate?.Invoke(this, new ForgeInstallStageChangedEventArgs
+            StageChangedEventDelegate?.Invoke(this, new InstallerStageChangedEventArgs
             {
                 CurrentStage = currentStage,
                 Progress = progress

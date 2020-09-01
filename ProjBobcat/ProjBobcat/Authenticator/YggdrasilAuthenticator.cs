@@ -95,10 +95,7 @@ namespace ProjBobcat.Authenticator
                 Username = Email,
                 Password = Password
             };
-            var requestJson = JsonConvert.SerializeObject(requestModel, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
+            var requestJson = JsonConvert.SerializeObject(requestModel, JsonHelper.CamelCasePropertyNamesSettings);
 
             var resultJson = await HttpHelper.Post(LoginAddress, requestJson).ConfigureAwait(true);
             var content = await resultJson.Content.ReadAsStringAsync().ConfigureAwait(true);
@@ -215,10 +212,7 @@ namespace ProjBobcat.Authenticator
                 RequestUser = userField,
                 SelectedProfile = response.SelectedProfile
             };
-            var requestJson = JsonConvert.SerializeObject(requestModel, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
+            var requestJson = JsonConvert.SerializeObject(requestModel, JsonHelper.CamelCasePropertyNamesSettings);
 
             var resultJson = await HttpHelper.Post(RefreshAddress, requestJson).ConfigureAwait(true);
             var content = await resultJson.Content.ReadAsStringAsync().ConfigureAwait(true);
@@ -291,10 +285,7 @@ namespace ProjBobcat.Authenticator
                 AccessToken = accessToken,
                 ClientToken = LauncherProfileParser.LauncherProfile.ClientToken
             };
-            var requestJson = JsonConvert.SerializeObject(requestModel, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
+            var requestJson = JsonConvert.SerializeObject(requestModel, JsonHelper.CamelCasePropertyNamesSettings);
 
             var result = await HttpHelper.Post(ValidateAddress, requestJson).ConfigureAwait(true);
             return result.StatusCode.Equals(HttpStatusCode.NoContent);
@@ -307,10 +298,7 @@ namespace ProjBobcat.Authenticator
                 AccessToken = accessToken,
                 ClientToken = LauncherProfileParser.LauncherProfile.ClientToken
             };
-            var requestJson = JsonConvert.SerializeObject(requestModel, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
+            var requestJson = JsonConvert.SerializeObject(requestModel, JsonHelper.CamelCasePropertyNamesSettings);
 
             _ = await HttpHelper.Post(RevokeAddress, requestJson).ConfigureAwait(true);
         }
@@ -326,10 +314,7 @@ namespace ProjBobcat.Authenticator
                 Username = Email,
                 Password = Password
             };
-            var requestJson = JsonConvert.SerializeObject(requestModel, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
+            var requestJson = JsonConvert.SerializeObject(requestModel, JsonHelper.CamelCasePropertyNamesSettings);
 
             var result = await HttpHelper.Post(SignOutAddress, requestJson).ConfigureAwait(true);
             return result.StatusCode.Equals(HttpStatusCode.NoContent);

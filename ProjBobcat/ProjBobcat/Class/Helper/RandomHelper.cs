@@ -21,10 +21,8 @@ namespace ProjBobcat.Class.Helper
         /// <exception cref="ArgumentNullException"></exception>
         public static T RandomSample<T>(this IEnumerable<T> enumerable)
         {
-            var arr = enumerable.ToArray();
-            if (arr.Length == 0)
-                return default;
-            return arr[Random.Next(0, arr.Length - 1)];
+            var arr = enumerable.ToList();
+            return arr.Count == 0 ? default : arr[Random.Next(0, arr.Count - 1)];
         }
     }
 }

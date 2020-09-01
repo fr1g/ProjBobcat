@@ -22,6 +22,7 @@ namespace ProjBobcat.Class.Helper
         /// 获取或设置用户代理信息。
         /// </summary>
         public static string Ua { get; set; } = "ProjBobcat";
+<<<<<<< Updated upstream
         /// <summary>
         /// 设置用户代理信息。
         /// </summary>
@@ -31,6 +32,8 @@ namespace ProjBobcat.Class.Helper
         {
             Ua = ua;
         }
+=======
+>>>>>>> Stashed changes
 
         /// <summary>
         /// 异步下载单个文件。
@@ -41,13 +44,18 @@ namespace ProjBobcat.Class.Helper
         /// <param name="complete"></param>
         /// <param name="changedEvent"></param>
         public static async Task DownloadSingleFileAsyncWithEvent(
+<<<<<<< Updated upstream
             Uri downloadUri, string downloadToDir, string filename,
+=======
+            Uri downloadUri, string downloadDir, string filename,
+>>>>>>> Stashed changes
             AsyncCompletedEventHandler complete,
             DownloadProgressChangedEventHandler changedEvent)
         {
             var di = new DirectoryInfo(downloadToDir);
             if (!di.Exists) di.Create();
 
+<<<<<<< Updated upstream
             using var client = new WebClient {
                 Timeout = 10000
             };
@@ -56,6 +64,22 @@ namespace ProjBobcat.Class.Helper
             client.DownloadProgressChanged += changedEvent;
             await client.DownloadFileTaskAsync(downloadUri, $"{downloadToDir}{filename}")
                 .ConfigureAwait(false);
+=======
+            try
+            {
+                using var wc = new WebClient();
+                wc.Headers.Add(HttpRequestHeader.UserAgent, Ua);
+
+                wc.DownloadFileCompleted += complete;
+                wc.DownloadProgressChanged += changedEvent;
+
+                await wc.DownloadFileTaskAsync(downloadUri, Path.Combine(downloadDir, filename)).ConfigureAwait(false);
+            }
+            catch(Exception ex)
+            {
+                complete?.Invoke(null, new AsyncCompletedEventArgs(ex, false, null));
+            }
+>>>>>>> Stashed changes
         }
 
 
@@ -67,11 +91,16 @@ namespace ProjBobcat.Class.Helper
         /// <param name="filename"></param>
         /// <returns></returns>
         public static async Task<TaskResult<string>> DownloadSingleFileAsync(
+<<<<<<< Updated upstream
             Uri downloadUri, string downloadToDir, string filename)
+=======
+            Uri downloadUri, string downloadDir, string filename)
+>>>>>>> Stashed changes
         {
             var di = new DirectoryInfo(downloadToDir);
             if (!di.Exists) di.Create();
 
+<<<<<<< Updated upstream
             using var client = new WebClient {
                 Timeout = 10000
             };
@@ -79,6 +108,20 @@ namespace ProjBobcat.Class.Helper
             await client.DownloadFileTaskAsync(downloadUri, $"{downloadToDir}{filename}")
                 .ConfigureAwait(false);
             return new TaskResult<string>(TaskResultStatus.Success);
+=======
+            try
+            {
+                using var wc = new WebClient();
+                wc.Headers.Add(HttpRequestHeader.UserAgent, Ua);
+
+                await wc.DownloadFileTaskAsync(downloadUri, Path.Combine(downloadDir, filename)).ConfigureAwait(false);
+                return new TaskResult<string>(TaskResultStatus.Success);
+            }
+            catch (Exception ex)
+            {
+                return new TaskResult<string>(TaskResultStatus.Error, ex.GetBaseException().Message);
+            }
+>>>>>>> Stashed changes
         }
 
 
@@ -90,6 +133,7 @@ namespace ProjBobcat.Class.Helper
         /// <param name="downloadProperty"></param>
         private static async Task DownloadData(DownloadFile downloadProperty)
         {
+<<<<<<< Updated upstream
             using var client = new WebClient
             {
                 Timeout = 10000
@@ -122,6 +166,35 @@ namespace ProjBobcat.Class.Helper
                     File.Delete(downloadProperty.DownloadPath);
                 downloadProperty.Completed?.Invoke(client,
                     new DownloadFileCompletedEventArgs(false, ex, downloadProperty));
+=======
+            var filePath = Path.Combine(downloadProperty.DownloadPath, downloadProperty.FileName);
+            
+            try
+            {
+                using var wc = new WebClient();
+                wc.Headers.Add(HttpRequestHeader.UserAgent, Ua);
+
+                wc.DownloadProgressChanged += (sender, args) =>
+                {
+                    downloadProperty.Changed?.Invoke(sender,
+                        new DownloadFileChangedEventArgs
+                        {
+                            ProgressPercentage = (double) args.BytesReceived / args.TotalBytesToReceive,
+                            BytesReceived = args.BytesReceived,
+                            TotalBytes = args.TotalBytesToReceive
+                        });
+                };
+
+                await wc.DownloadFileTaskAsync(downloadProperty.DownloadUri, filePath).ConfigureAwait(false);
+
+                downloadProperty.Completed?.Invoke(wc,
+                    new DownloadFileCompletedEventArgs(true, null, downloadProperty));
+            }
+            catch (Exception e)
+            {
+                downloadProperty.Completed?.Invoke(null,
+                    new DownloadFileCompletedEventArgs(false, e, downloadProperty));
+>>>>>>> Stashed changes
             }
         }
 
@@ -149,7 +222,7 @@ namespace ProjBobcat.Class.Helper
             using var bc = new BlockingCollection<DownloadFile>(downloadThread * 4);
             using var downloadQueueTask = Task.Run(() =>
             {
-                downloadFiles.AsParallel().ForAll(d => bc.Add(d, token));
+                downloadFiles.ForEach(d => bc.Add(d, token));
 
                 bc.CompleteAdding();
             }, token);
@@ -160,9 +233,7 @@ namespace ProjBobcat.Class.Helper
                 {
                     foreach (var df in bc.GetConsumingEnumerable())
                     {
-                        var di = new DirectoryInfo(
-                            df.DownloadPath.Substring(0, df.DownloadPath.LastIndexOf('\\')));
-                        if (!di.Exists) di.Create();
+                        if (!Directory.Exists(df.DownloadPath)) Directory.CreateDirectory(df.DownloadPath);
 
                          if (df.FileSize >= 1048576 || df.FileSize == 0)
                              MultiPartDownload(df, downloadParts);
@@ -211,6 +282,8 @@ namespace ProjBobcat.Class.Helper
             //Handle number of parallel downloads  
             if (numberOfParts <= 0) numberOfParts = Environment.ProcessorCount;
 
+            var filePath = Path.Combine(downloadFile.DownloadPath, downloadFile.FileName);
+
             try
             {
                 #region Get file size
@@ -220,7 +293,11 @@ namespace ProjBobcat.Class.Helper
                 webRequest.UserAgent = Ua;
                 long responseLength;
                 bool parallelDownloadSupported;
+<<<<<<< Updated upstream
 
+=======
+                
+>>>>>>> Stashed changes
                 using (var webResponse = await webRequest.GetResponseAsync().ConfigureAwait(false))
                 {
                     parallelDownloadSupported = webResponse.Headers.Get("Accept-Ranges")?.Contains("bytes") ?? false;
@@ -236,7 +313,9 @@ namespace ProjBobcat.Class.Helper
 
                 #endregion
 
-                if (File.Exists(downloadFile.DownloadPath)) File.Delete(downloadFile.DownloadPath);
+                if (!Directory.Exists(downloadFile.DownloadPath))
+                    Directory.CreateDirectory(downloadFile.DownloadPath);
+                if (File.Exists(filePath)) File.Delete(filePath);
 
                 var tempFilesBag = new ConcurrentBag<Tuple<int, string>>();
 
@@ -245,7 +324,7 @@ namespace ProjBobcat.Class.Helper
                 var readRanges = new List<DownloadRange>();
                 var partSize = (long) Math.Ceiling((double) responseLength / numberOfParts);
 
-                if(partSize != 0)
+                if (partSize != 0)
                     for (var i = 0; i < numberOfParts; i++)
                     {
                         var start = i * partSize + Math.Min(1, i);
@@ -276,10 +355,9 @@ namespace ProjBobcat.Class.Helper
 
                 for (var i = 0; i < readRanges.Count; i++)
                 {
-                    var range = readRanges[i];
-
-                    void DownloadMethod()
+                    void DownloadMethod(object indexNum)
                     {
+<<<<<<< Updated upstream
                         var lastReceivedBytes = 0L;
                         using var client = new WebClient
                         {
@@ -300,18 +378,43 @@ namespace ProjBobcat.Class.Helper
                         var path = Path.GetTempFileName();
                         var ta = client.DownloadFileTaskAsync(new Uri(downloadFile.DownloadUri), path);
                         ta.GetAwaiter().GetResult();
+=======
+                        var range = readRanges[(int) indexNum];
+                        var path = Path.GetTempFileName();
+                        var lastDownloadedBytesCount = 0L;
+
+                        using var wc = new WebClient
+                        {
+                            DownloadRange = range,
+                            Timeout = Timeout.Infinite
+                        };
+
+                        wc.Headers.Add(HttpRequestHeader.UserAgent, Ua);
+
+                        wc.DownloadProgressChanged += (sender, args) =>
+                        {
+                            downloadedBytesCount += args.BytesReceived - lastDownloadedBytesCount;
+                            lastDownloadedBytesCount = args.BytesReceived;
+
+                            downloadFile.Changed?.Invoke(sender,
+                                new DownloadFileChangedEventArgs
+                                {
+                                    ProgressPercentage = (double) downloadedBytesCount / responseLength,
+                                    BytesReceived = downloadedBytesCount,
+                                    TotalBytes = responseLength
+                                });
+                        };
+
+                        wc.DownloadFileTaskAsync(new Uri(downloadFile.DownloadUri), path).GetAwaiter().GetResult();
+>>>>>>> Stashed changes
 
                         tempFilesBag.Add(new Tuple<int, string>(range.Index, path));
 
                     }
 
-                    var t = new Task(DownloadMethod);
+                    var t = new Task(DownloadMethod, i);
                     tasks[i] = t;
-                }
-
-                foreach (var t in tasks)
-                {
-                    t.Start();
+                    tasks[i].Start();
                 }
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -327,24 +430,18 @@ namespace ProjBobcat.Class.Helper
                     return;
                 }
 
+<<<<<<< Updated upstream
                 using var fs = new FileStream(downloadFile.DownloadPath, FileMode.Append);
                 foreach (var element in tempFilesBag.ToArray().OrderBy(b => b.Item1).ToArray())
+=======
+                using var fs = new FileStream(filePath, FileMode.Append);
+                foreach (var element in tempFilesBag.OrderBy(b => b.Item1))
+>>>>>>> Stashed changes
                 {
                     var wb = File.ReadAllBytes(element.Item2);
                     fs.Write(wb, 0, wb.Length);
                     File.Delete(element.Item2);
                 }
-
-                var totalLength = fs.Length;
-                fs.Close();
-
-                if (totalLength != responseLength)
-                {
-                    downloadFile.Completed?.Invoke(null,
-                        new DownloadFileCompletedEventArgs(false, null, downloadFile));
-                    return;
-                }
-
                 #endregion
 
                 downloadFile.Completed?.Invoke(null,

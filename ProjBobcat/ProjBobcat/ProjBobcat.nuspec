@@ -2,7 +2,11 @@
 <package >
   <metadata>
     <id>ProjBobcat</id>
+<<<<<<< Updated upstream
     <version>1.0.5.1</version>
+=======
+    <version>1.0.6.3</version>
+>>>>>>> Stashed changes
     <title>ProjBobcat</title>
     <authors>Corona Studio</authors>
     <owners>Corona Studio</owners>

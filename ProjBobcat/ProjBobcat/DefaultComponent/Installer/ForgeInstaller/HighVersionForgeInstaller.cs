@@ -9,7 +9,7 @@ using ProjBobcat.Class.Model.YggdrasilAuth;
 using ProjBobcat.Event;
 using ProjBobcat.Interface;
 
-namespace ProjBobcat.DefaultComponent.ForgeInstaller
+namespace ProjBobcat.DefaultComponent.Installer.ForgeInstaller
 {
     public class HighVersionForgeInstaller : IForgeInstaller
     {
@@ -26,10 +26,10 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
         private bool _succeed;
         public string JavaExecutablePath { get; set; }
 
+        public string RootPath { get; set; }
         public string ForgeExecutablePath { get; set; }
-        public string ForgeInstallPath { get; set; }
 
-        public event EventHandler<ForgeInstallStageChangedEventArgs> StageChangedEventDelegate;
+        public event EventHandler<InstallerStageChangedEventArgs> StageChangedEventDelegate;
 
         public ForgeInstallResult InstallForge()
         {
@@ -40,8 +40,6 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
         {
             if (string.IsNullOrEmpty(ForgeExecutablePath))
                 throw new ArgumentNullException("未指定\"ForgeExecutablePath\"参数");
-            if (string.IsNullOrEmpty(ForgeInstallPath))
-                throw new ArgumentNullException("未指定\"ForgeInstallPath\"参数");
             if (string.IsNullOrEmpty(JavaExecutablePath))
                 throw new ArgumentNullException("未指定\"JavaExecutablePath\"参数");
 
@@ -69,14 +67,15 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
                     }
                 };
 
-            var di = new DirectoryInfo(ForgeInstallPath);
-            if (!di.Exists)
-                di.Create();
-
+            var di = new DirectoryInfo(RootPath);
             di.CreateSubdirectory("Temp");
 
             var taskResult = await DownloadHelper.DownloadSingleFileAsync(new Uri(HeadlessInstallerDownloadUri),
+<<<<<<< Updated upstream:ProjBobcat/ProjBobcat/DefaultComponent/ForgeInstaller/HighVersionForgeInstaller.cs
                 $"{di.FullName}Temp", "HeadlessInstaller.jar").ConfigureAwait(false);
+=======
+                Path.Combine(di.FullName, "Temp"), "HeadlessInstaller.jar").ConfigureAwait(false);
+>>>>>>> Stashed changes:ProjBobcat/ProjBobcat/DefaultComponent/Installer/ForgeInstaller/HighVersionForgeInstaller.cs
 
             if (taskResult.TaskStatus == TaskResultStatus.Error)
                 return new ForgeInstallResult
@@ -92,14 +91,14 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
 
             var classes = new List<string>
             {
-                $"{di.FullName}Temp\\HeadlessInstaller.jar",
+                Path.Combine(di.FullName, "Temp", "HeadlessInstaller.jar"),
                 ForgeExecutablePath
             };
 
             var replacementDic = new Dictionary<string, string>
             {
                 {"{ClassPaths}", $"\"{string.Join(";", classes)}\""},
-                {"{InstallPath}", $"\"{ForgeInstallPath}\""}
+                {"{InstallPath}", $"\"{Path.GetFullPath(RootPath)}\""}
             };
 
             var installArgument = StringHelper.ReplaceByDic(InstallArgumentPlaceHolder, replacementDic);
@@ -107,11 +106,12 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
             var process = Process.Start(new ProcessStartInfo(JavaExecutablePath, installArgument)
             {
                 UseShellExecute = false,
-                WorkingDirectory = ForgeInstallPath,
+                WorkingDirectory = RootPath,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true
             });
 
+            process.OutputDataReceived += ProcessOutput;
             process.OutputDataReceived += ProcessOutput;
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
@@ -120,7 +120,7 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
 
             try
             {
-                DirectoryHelper.CleanDirectory($"{di.FullName}Temp\\", true);
+                DirectoryHelper.CleanDirectory(Path.Combine(di.FullName, "Temp"), true);
 
                 return new ForgeInstallResult
                 {
@@ -179,7 +179,7 @@ namespace ProjBobcat.DefaultComponent.ForgeInstaller
 
         private void InvokeStatusChangedEvent(string currentStage, double progress)
         {
-            StageChangedEventDelegate?.Invoke(this, new ForgeInstallStageChangedEventArgs
+            StageChangedEventDelegate?.Invoke(this, new InstallerStageChangedEventArgs
             {
                 CurrentStage = currentStage,
                 Progress = progress

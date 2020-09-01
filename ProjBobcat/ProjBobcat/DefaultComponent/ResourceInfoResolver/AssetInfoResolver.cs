@@ -85,7 +85,7 @@ namespace ProjBobcat.DefaultComponent.ResourceInfoResolver
                 return default;
             }
 
-            if (assetObject == null)//?.Equals(default(AssetObjectModel)) ?? true)
+            if (assetObject == null)
             {
                 LogGameResourceInfoResolveStatus("解析Asset Indexes 文件失败！原因：未知错误", LogType.Error);
                 return default;
@@ -94,15 +94,20 @@ namespace ProjBobcat.DefaultComponent.ResourceInfoResolver
             var lostAssets = (from asset in assetObject.Objects
                     let twoDigitsHash = asset.Value.Hash.Substring(0, 2)
                     let eightDigitsHash = asset.Value.Hash.Substring(0, 8)
+<<<<<<< Updated upstream
                     let relativeAssetPath = $"{twoDigitsHash}\\{asset.Value.Hash}"
                     let path = $"{assetObjectsDi.FullName}\\{relativeAssetPath}"
                     where !File.Exists(path)
+=======
+                    let path = Path.Combine(assetObjectsDi.FullName, twoDigitsHash)
+                    where !File.Exists(Path.Combine(path, asset.Value.Hash))
+>>>>>>> Stashed changes
                     select new AssetDownloadInfo
                     {
                         Title = eightDigitsHash,
                         Path = path,
                         Type = "Asset",
-                        Uri = $"{AssetUriRoot}{relativeAssetPath.Replace('\\', '/')}",
+                        Uri = $"{AssetUriRoot}{twoDigitsHash}/{asset.Value.Hash}",
                         FileSize = asset.Value.Size,
                         CheckSum = asset.Value.Hash
                     })

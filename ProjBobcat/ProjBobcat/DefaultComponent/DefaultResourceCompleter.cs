@@ -108,7 +108,7 @@ namespace ProjBobcat.DefaultComponent
                         CheckSum = f.CheckSum,
                         FileType = f.Type
                     }
-                ).ToList();
+                ).OrderBy(x => x.FileSize).ToList();
             _needToDownload = downloadList.Count;
 
             var result = await DownloadFiles(downloadList).ConfigureAwait(true);
@@ -123,7 +123,11 @@ namespace ProjBobcat.DefaultComponent
                 var retryCount = 0;
 
                 await DownloadHelper.AdvancedDownloadListFile(downloadList, DownloadThread, null)
+<<<<<<< Updated upstream
                         .ConfigureAwait(false);
+=======
+                    .ConfigureAwait(false);
+>>>>>>> Stashed changes
 
                 if (!_needRetry) return new Tuple<TaskResultStatus, bool>(TaskResultStatus.Success, false);
 
