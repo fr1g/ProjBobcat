@@ -71,11 +71,7 @@ namespace ProjBobcat.DefaultComponent.Installer.ForgeInstaller
             di.CreateSubdirectory("Temp");
 
             var taskResult = await DownloadHelper.DownloadSingleFileAsync(new Uri(HeadlessInstallerDownloadUri),
-<<<<<<< Updated upstream:ProjBobcat/ProjBobcat/DefaultComponent/ForgeInstaller/HighVersionForgeInstaller.cs
-                $"{di.FullName}Temp", "HeadlessInstaller.jar").ConfigureAwait(false);
-=======
                 Path.Combine(di.FullName, "Temp"), "HeadlessInstaller.jar").ConfigureAwait(false);
->>>>>>> Stashed changes:ProjBobcat/ProjBobcat/DefaultComponent/Installer/ForgeInstaller/HighVersionForgeInstaller.cs
 
             if (taskResult.TaskStatus == TaskResultStatus.Error)
                 return new ForgeInstallResult

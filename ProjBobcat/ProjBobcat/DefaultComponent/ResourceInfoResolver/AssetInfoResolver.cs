@@ -94,14 +94,8 @@ namespace ProjBobcat.DefaultComponent.ResourceInfoResolver
             var lostAssets = (from asset in assetObject.Objects
                     let twoDigitsHash = asset.Value.Hash.Substring(0, 2)
                     let eightDigitsHash = asset.Value.Hash.Substring(0, 8)
-<<<<<<< Updated upstream
-                    let relativeAssetPath = $"{twoDigitsHash}\\{asset.Value.Hash}"
-                    let path = $"{assetObjectsDi.FullName}\\{relativeAssetPath}"
-                    where !File.Exists(path)
-=======
                     let path = Path.Combine(assetObjectsDi.FullName, twoDigitsHash)
                     where !File.Exists(Path.Combine(path, asset.Value.Hash))
->>>>>>> Stashed changes
                     select new AssetDownloadInfo
                     {
                         Title = eightDigitsHash,
